@@ -10,6 +10,16 @@
 
 int32_t *buffer;
 
+void show_help() {
+	std::cout << "Usage: osmesa [Options]" << std::endl;
+	std::cout << "Available options:" << std::endl;
+	std::cout << "  -h --help    show this help" << std::endl;
+	std::cout << "  -x --width   set video width (default 800)" << std::endl;
+	std::cout << "  -y --height  set video height (default 480)" << std::endl;
+	std::cout << "  -r --rate    set video width (default 25)" << std::endl;
+	std::cout << "  -o --output  set output file (no output: live preview)" << std::endl;
+}
+
 int main(int argc, char **argv) {
 	char *outputvideofile = 0;
 	int w = 800;
@@ -20,19 +30,23 @@ int main(int argc, char **argv) {
 	static struct option long_options[] =
 	{
 		/* These options set a flag. */
-		{"width",  required_argument, 0, 'w'},
-		{"height",  required_argument, 0, 'h'},
+		{"help",  no_argument, 0, 'h'},
+		{"width",  required_argument, 0, 'x'},
+		{"height",  required_argument, 0, 'y'},
 		{"rate",    required_argument, 0, 'r'},
 		{"output",    required_argument, 0, 'o'},
 		{0, 0, 0, 0}
 	};
 	int option_index = 0, c;
-	while((c = getopt_long(argc, argv, "w:h:r:o:", long_options, &option_index)) != -1) {
+	while((c = getopt_long(argc, argv, "hx:y:r:o:", long_options, &option_index)) != -1) {
 		switch(c) {
-			case 'w':
+			case 'h':
+			show_help();
+			return 1;
+			case 'x':
 			w = atoi(optarg);
 			break;
-			case 'h':
+			case 'y':
 			h = atoi(optarg);
 			break;
 			case 'r':
