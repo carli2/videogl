@@ -7,6 +7,7 @@
 #include <time.h>
 #include <sched.h>
 #include <getopt.h>
+#include <dlfcn.h>
 
 int32_t *buffer;
 
@@ -18,17 +19,22 @@ void show_help() {
 	std::cout << "  -y --height  set video height (default 480)" << std::endl;
 	std::cout << "  -r --rate    set video width (default 25)" << std::endl;
 	std::cout << "  -o --output  set output file (no output: live preview)" << std::endl;
+	std::cout << "  -l --lib     use scene from this shared library" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Shared libraries have to have a function of the following signature:" << std::endl;
+	std::cout << "  Scene *getScene(int width, int height, int fps, int argc, char **argv)" << std::endl;
+	std::cout << "include scene.h in order to implement the interface of Scene." << std::endl;
 }
 
 class DemoScene: public Scene {
 	public:
-	DemoScene(int width, int height): Scene(width, height) {
+	DemoScene(int width, int height, int fps): Scene(width, height, fps) {
 		glClearColor(0.0, 0.4, 0.0, 0.5);
 		glDisable(GL_DEPTH_TEST);
 	}
 
 	bool render(int framenumber) {
-		if(framenumber > 50) {
+		if(framenumber > 2*fps) {
 			// stop play
 			return false;
 		}
@@ -39,7 +45,7 @@ class DemoScene: public Scene {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glTranslatef(0, 0, -4);
-		glColor4f(0.1, 0.2, framenumber/50.0, 1.0);
+		glColor4f(0.1, 0.2, framenumber/2.0/fps, 1.0);
 		glBegin(GL_TRIANGLES);
 		glVertex3f(0, 0, 0);
 		glVertex3f(1, 0, 0);
@@ -51,6 +57,7 @@ class DemoScene: public Scene {
 
 int main(int argc, char **argv) {
 	char *outputvideofile = 0;
+	char *lib = 0;
 	int w = 800;
 	int h = 480;
 	int fps = 25;
@@ -59,15 +66,16 @@ int main(int argc, char **argv) {
 	static struct option long_options[] =
 	{
 		/* These options set a flag. */
-		{"help",  no_argument, 0, 'h'},
+		{"help",   no_argument, 0, 'h'},
 		{"width",  required_argument, 0, 'x'},
-		{"height",  required_argument, 0, 'y'},
-		{"rate",    required_argument, 0, 'r'},
-		{"output",    required_argument, 0, 'o'},
+		{"height", required_argument, 0, 'y'},
+		{"rate",   required_argument, 0, 'r'},
+		{"output", required_argument, 0, 'o'},
+		{"lib",    required_argument, 0, 'l'},
 		{0, 0, 0, 0}
 	};
 	int option_index = 0, c;
-	while((c = getopt_long(argc, argv, "hx:y:r:o:", long_options, &option_index)) != -1) {
+	while((c = getopt_long(argc, argv, "hx:y:r:o:l:", long_options, &option_index)) != -1) {
 		switch(c) {
 			case 'h':
 			show_help();
@@ -84,6 +92,9 @@ int main(int argc, char **argv) {
 			case 'o':
 			outputvideofile = optarg;
 			break;
+			case 'l':
+			lib = optarg;
+			break;
 		}
 	}
 
@@ -94,11 +105,11 @@ int main(int argc, char **argv) {
 		buffer = new int32_t[w*h];
 		context = OSMesaCreateContextExt(OSMESA_RGBA, 24, 0, 0, NULL);
 		if(!context) {
-			printf("No context");
+			std::cerr << "No context" << std::endl;
 			return -1;
 		}
 		if(!OSMesaMakeCurrent(context, buffer, GL_UNSIGNED_BYTE, w, h)) {
-			printf("MakeCurrent failed");
+			std::cerr << "MakeCurrent failed" << std::endl;
 			return -1;
 		}
 		char command[1024];
@@ -112,7 +123,33 @@ int main(int argc, char **argv) {
 	glViewport(0, 0, w, h);
 
 	// create scene
-	Scene *scene = new DemoScene(w, h);
+	Scene *scene;
+	if(lib) {
+		void *handle = dlopen(lib, RTLD_LAZY | RTLD_LOCAL);
+		if(!handle) {
+			std::cerr << "library not found: " << lib << std::endl;
+			return -1;
+		}
+		// C++-style
+		void *getScene = dlsym(handle, "_Z8getSceneiiiiPPc");
+		if(!getScene) {
+			// C-Style
+			getScene = dlsym(handle, "getScene");
+			std::cerr << "warning: you are using C style symbols" << std::endl;
+		}
+		if(!getScene) {
+			std::cerr << "library has no symbol getScene" << std::endl;
+			return -1;
+		}
+		scene = ((Scene *(*)(int, int, int, int, char**))getScene)(w, h, fps, argc, argv);
+		if(!scene) {
+			std::cerr << "no scene provided by library" << std::endl;
+			return -1;
+		}
+		//dlclose(handle);
+	} else {
+		scene = new DemoScene(w, h, fps);
+	}
 
 	// run the main loop
 	int framenum = 0;
