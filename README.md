@@ -9,12 +9,12 @@ Usage
 `osmesa [Options]`
 
 Available options:
-  -h --help    show this help
-  -x --width   set video width (default 800)
-  -y --height  set video height (default 480)
-  -r --rate    set video width (default 25)
-  -o --output  set output file (no output: live preview)
-  -l --lib     use scene from this shared library
+ * -h --help    show this help
+ * -x --width   set video width (default 800)
+ * -y --height  set video height (default 480)
+ * -r --rate    set video width (default 25)
+ * -o --output  set output file (no output: live preview)
+ * -l --lib     use scene from this shared library
 
 Shared libraries have to have a function of the following signature:
 `Scene *getScene(int width, int height, int fps, int argc, char **argv)`
@@ -32,7 +32,7 @@ Begin with the following template:
 
 class MyScene: public Scene {
 	public:
-	HelloScene(int width, int height, int fps /* add params here */): Scene(width, height, fps) {
+	MyScene(int width, int height, int fps /* add params here */): Scene(width, height, fps) {
 		// initialize GL flags ...
 		// load textures ...
 	}
@@ -50,7 +50,7 @@ class MyScene: public Scene {
 Scene *getScene(int width, int height, int fps, int argc, char **argv) {
 	// create the scene
 	// parse additional parameters here
-	return new HelloScene(width, height, fps);
+	return new MyScene(width, height, fps);
 }
 
 ```
