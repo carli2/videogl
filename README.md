@@ -3,6 +3,8 @@ videogl
 
 OpenGL based Video compositor
 
+Use this piece of software if you want to create videos out of 3d scenes. This project uses SDL and OpenGL for a video preview and osmesa and ffmpeg for video production.
+
 Usage
 -----
 
@@ -15,10 +17,6 @@ Available options:
  * -r --rate    set video width (default 25)
  * -o --output  set output file (no output: live preview)
  * -l --lib     use scene from this shared library
-
-Shared libraries have to have a function of the following signature:
-`Scene *getScene(int width, int height, int fps, int argc, char **argv)`
-include scene.h in order to implement the interface of Scene.
 
 
 Custom Scenes
