@@ -1,6 +1,0 @@
-
-class Texture {
-};
-
-class RectangularGrid {
-};

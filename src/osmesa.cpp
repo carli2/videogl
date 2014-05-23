@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdio.h>
 #include <GL/osmesa.h>
 #include <GL/gl.h>
 #include <SDL/SDL.h>
