@@ -1,4 +1,4 @@
-#include "../scene.h"
+#include "scene.h"
 #include "GL/gl.h"
 #include "math.h"
 
