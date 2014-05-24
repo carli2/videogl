@@ -57,3 +57,8 @@ You can try an example:
  - compile example/hello.cpp with `gcc examples/hello.cpp -shared -ohello.so -fPIC`
  - render the scene with `osmesa -l ./hello.so`
 
+
+Helper Functions
+----------------
+
+There are some helpers like the `RectangularGrid` helper. An example is `grid.so` which can also be viewed in http://youtu.be/kDjiN1X54q8

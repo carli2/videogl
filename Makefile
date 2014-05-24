@@ -1,5 +1,7 @@
 SOURCES=src/osmesa.cpp src/videohelpers.cpp
 
+all: osmesa *.so
+
 osmesa: $(SOURCES)
 	clang++ $(SOURCES) `pkg-config --libs --cflags osmesa` -lGL -lSDL -o osmesa -ldl -g -Iinclude -rdynamic
 

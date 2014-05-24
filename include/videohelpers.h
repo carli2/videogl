@@ -9,6 +9,7 @@ class RectangularGrid {
 	~RectangularGrid();
 	void resetGrid();
 	void render();
+	void leaf(); // perform one frame of the leaf effect
 
 	private:
 	int resolution;
